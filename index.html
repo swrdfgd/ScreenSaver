@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js' type='text/javascript'></script>
+<script src="characterInFont.js"></script>
+
+<script>
+</script>
+
+<style>
+  /* CSS untuk gaya emoji */
+  .emoji {
+    font-size: 2em;
+    position: absolute;
+  }
+</style>
+</head>
+<body>
+
+<script>
+//fungsi warna random------------------------------------------------------------------------------
+function getRandomColor() {
+  var lettersz = '0123456789abcdef';
+  var colorz = '#';
+  for (var i = 0; i < 6; i++) {
+    colorz += lettersz[Math.floor(Math.random() * 16)];
+  }
+  return colorz;
+}
+//------------------------------------------------------------------------------------------------
+</script>
+
+<script>
+	emojiCount = 0;
+  // Fungsi untuk menghasilkan emoji acak
+  function getRandomEmoji(font) {
+    // Generate a random code point within the entire Unicode range (0x0000 to 0x10FFFF).
+	const codePoint = Math.floor(Math.random() * (0x10FFFF + 1));
+  
+	  if(!characterIsSupported(String.fromCodePoint(codePoint),font)){return getRandomEmoji(font);}
+	  
+	  // Convert the code point to a Unicode character.
+	  return String.fromCodePoint(codePoint);
+  }
+
+  // Fungsi untuk membuat emoji bergerak secara acak
+  function createAndAnimateEmoji(font) {
+    const emoji = document.createElement("div");
+    emoji.className = "emoji";
+	emoji.id = "emoji" + emojiCount; emojiCount++;
+    emoji.innerHTML = getRandomEmoji(font);
+	emoji.style.fontSize = 1/(1-Math.random()) - Math.random() + "em";
+	emoji.style.color = getRandomColor();
+    document.body.appendChild(emoji);
+
+    // Set posisi awal secara acak
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const x = Math.random() * (screenWidth - 100); // 100 adalah lebar emoji
+    const y = Math.random() * (screenHeight - 100); // 100 adalah tinggi emoji
+    emoji.style.left = x + "px";
+    emoji.style.top = y + "px";
+
+    // Fungsi untuk menggerakkan emoji secara acak
+    async function moveEmoji() {
+      const newX = Math.random() * (screenWidth - 100);
+      const newY = Math.random() * (screenHeight - 100);
+
+      // Gunakan Anime.js untuk membuat animasi pergerakan
+      anime({
+        targets: emoji,
+        left: newX,
+        top: newY,
+        duration: 3000, // Durasi pergerakan
+        easing: 'linear',
+        complete: moveEmoji // Lanjutkan pergerakan setelah animasi selesai
+      });
+
+      // Periksa tabrakan dengan emoji lain
+      const emojis = document.querySelectorAll(".emoji");
+      emojis.forEach((otherEmoji) => {
+        if (otherEmoji !== emoji) {
+          const rect1 = emoji.getBoundingClientRect();
+          const rect2 = otherEmoji.getBoundingClientRect();
+
+          if (
+            rect1.left < rect2.right &&
+            rect1.right > rect2.left &&
+            rect1.top < rect2.bottom &&
+            rect1.bottom > rect2.top
+          ) {
+            // Emoji bertabrakan, hilangkan emoji ini
+            emoji.remove();
+			otherEmoji.remove();
+          }
+        }
+      });
+    }
+
+    // Mulai pergerakan pertama kali
+    moveEmoji();
+  }
+
+  // Panggil fungsi untuk membuat dan menganimasikan emoji
+  
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+<script>
+//random font https://codepen.io/akobashikawa/pen/rZRrQN
+const API_KEY = 'AIzaSyBTPAz_OQr140D1rtD0o6vwM63XohXw8Ds';
+
+let fontsList = [];
+const el = document.querySelector("#quote");
+async function loadFontsList() {
+    try {
+        const result = await fetch('https://www.googleapis.com/webfonts/v1/webfonts?key=' + API_KEY);
+        const data = await result.json();
+        //console.log('loaded google fonts list: ', data.items.length);
+        return data.items;
+    } catch (error) {
+        console.log('loadFontsList', error, error.message);
+    }
+}
+function loadRandomFont(fontsList) {
+    const randomIndex = Math.floor(Math.random() * fontsList.length);
+    const choosedFont = fontsList[randomIndex].family;
+    WebFont.load({
+        google: {
+            families: [choosedFont]
+        }
+    });
+    //console.log('choosed font: ', choosedFont);
+    return choosedFont;
+}
+
+function updateFont(el = document.querySelector("#quote"), choosedFont = loadRandomFont(fontsList)) {
+    el.style.fontFamily = choosedFont;
+    el.setAttribute('title', choosedFont);
+}
+
+async function main() {
+    fontsList = await loadFontsList();
+		choosedFont = loadRandomFont(fontsList);
+		createAndAnimateEmoji(choosedFont);
+		updateFont(document.querySelector("#emoji"+(emojiCount-1)),choosedFont);
+    //updateFont(el, choosedFont);
+    //el.style.visibility = "visible";
+}
+
+setInterval(main, 5000); // Ubah angka ini untuk mengatur frekuensi munculnya emoji
+</script>
+
+
+<!-- RandomPattern -->
+
+<canvas id="plotCanvas" width="1000" height="500" hidden></canvas>
+  
+  <script>
+    function rndNum() {
+	  return Math.floor(1/(1-Math.random())) - 1
+    }
+  </script>
+  
+  <script>
+	function randFunc(deep){
+		deep = deep - 1
+		var mode = Math.ceil(Math.random()*3);
+		if (mode == 1 || deep == 0){
+			return [rndNum(),'x','y'][Math.floor(Math.random()*3)];
+		}
+		if (mode == 2){
+			return "Math." + ['exp','log','sin','cos','tan','asin','acos','atan','sinh','cosh','tanh','asinh','acosh','atan'][Math.floor(Math.random()*14)] + "(" + randFunc(deep) + ") ";
+		}
+		if (mode == 3){
+			return "(" + randFunc(deep) + ['+','-','*','/','**'][Math.floor(Math.random()*5)] + randFunc(deep) + ") ";
+		}
+	}
+  </script>
+  <script>
+	function funcEval(fungsi, x, y){
+		eval(fungsi)
+	}
+  
+  </script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Get the canvas element
+      const canvas = document.getElementById('plotCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Define implicit function
+      function implicitFunction(x, y) {
+		x = 10*x;
+		y = 10*y
+        return Math.tan(x+y) - x - y; // Example: Circle with radius 1
+      }
+
+      // Draw the implicit function on the canvas
+	  const delay = ms => new Promise(res => setTimeout(res, ms));
+	  
+      async function drawImplicitFunction() {
+		fungsiRandom = randFunc(Math.floor(1/(1-Math.random())));
+		eval('function implicitFunction(x, y){return '+ fungsiRandom +'}');
+		console.log(fungsiRandom);
+		var epsilon = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+		var style = Math.ceil(Math.random()*6);
+		if (style >= 5){
+			hue1 = Math.floor(Math.random()*361); s1 = 101 - Math.floor((1/(1-Math.random()))); l1 = 50;
+			if (Math.random() < 1/2){l1 = l1 + ((-1)**Math.floor(Math.random()*2))*Math.floor((1/(1-Math.random())))}
+			hue2 = Math.floor(Math.random()*361); s2 = 101 - Math.floor((1/(1-Math.random()))); l2 = 50;
+			if (Math.random() < 1/2){l2 = l2 + ((-1)**Math.floor(Math.random()*2))*Math.floor((1/(1-Math.random())))}
+			epsilon2 = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+			epsilon3 = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+		}
+		console.log(style);
+        const step = 2 / canvas.width;
+		count = 1
+        for (let x = -1; x <= 1; x += step) {
+          for (let y = -1; y <= 1; y += step) {
+		    count = (count+1)%1000;
+		    if (count == 0){await delay(1);}
+            const value = implicitFunction(x, y);
+			if (style == 1){
+				color = Math.abs(value) < epsilon  ? 'black' : 'white'; // Choose color based on function value
+            }
+			if (style == 2){
+				color = Math.abs(value) < ((1/(1-Math.random())) - 1) / (1/(1-Math.random()))  ? 'black' : 'white'; // Choose color based on function value
+            }
+			if (style == 3){
+				abu = Math.min(255,Math.abs(value)*255/epsilon)
+				color = `rgb(${abu},${abu},${abu})`
+            }
+			if (style == 4){
+				epsilon = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+				abu = Math.min(255,Math.abs(value)*255/epsilon)
+				color = `rgb(${abu},${abu},${abu})`
+            }
+			if (style == 5){
+				hue = (hue1 + (hue2-hue1)*Math.abs(value)/epsilon)%361;
+				if (Math.abs(value) >= epsilon){hue = hue2;}
+				s = s1 + (s2-s1)*Math.abs(value)/epsilon2;
+				if (s < 0){s = 0}
+				if (s > 100){s = 100}
+				l = l1 + (l2-l1)*Math.abs(value)/epsilon3;
+				if (l < 0){l = 0}
+				if (l > 100){l = 100}
+				color = `hsl(${hue},${s}%,${l}%)`
+            }
+			if (style == 6){
+				epsilon = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+				epsilon2 = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+				epsilon3 = ((1/(1-Math.random())) - 1) / (1/(1-Math.random()));
+				hue = (hue1 + (hue2-hue1)*Math.abs(value)/epsilon)%361;
+				if (Math.abs(value) >= epsilon){hue = hue2;}
+				s = s1 + (s2-s1)*Math.abs(value)/epsilon2;
+				if (s < 0){s = 0}
+				if (s > 100){s = 100}
+				l = l1 + (l2-l1)*Math.abs(value)/epsilon3;
+				if (l < 0){l = 0}
+				if (l > 100){l = 100}
+				color = `hsl(${hue},${s}%,${l}%)`
+            }
+			ctx.fillStyle = color;
+            ctx.fillRect((x + 1) * canvas.width / 2, (1 - y) * canvas.height / 2, 1, 1);
+			
+          }
+        }
+		var dataURL = canvas.toDataURL();
+		document.body.style.background = "url("+dataURL+")";
+		document.body.style.backgroundSize = "100% 100vh";
+		document.body.style.backgroundRepeat = "no-repeat";
+		setTimeout(drawImplicitFunction, 1000*(1/(1-Math.random())));
+      }
+
+      // Clear the canvas
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Redraw the implicit function when the page loads
+      drawImplicitFunction();
+
+      // Optionally, you can add interactivity or redraw the function on user actions
+      // For example, redraw the function when the canvas is clicked
+      //canvas.addEventListener('click', function() {
+      //  clearCanvas();
+      //  drawImplicitFunction();
+      //});
+    });
+  </script>
+
+</body>
+</html>
